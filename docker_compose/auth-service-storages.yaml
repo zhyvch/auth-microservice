@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:8
+    container_name: mongodb
+    ports:
+      - '${MONGODB_PORT}:27017'
+    volumes:
+      - auth_service_mongo_data:/data/db
+    networks:
+      - backend
+
+volumes:
+  auth_service_mongo_data:
+
+networks:
+  backend:
+    driver: bridge
