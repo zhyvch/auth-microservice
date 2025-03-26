@@ -1,52 +1,52 @@
-from fastapi import APIRouter, HTTPException, status
-from uuid import UUID
+from typing import Annotated
 
-from application.api.auth.schemas import LoginSchema, TokenPairSchema, RefreshTokenSchema
-from domain.entities.tokens import TokenType, TokenEntity
-from infrastrusture.security.crypt import verify_password
-from infrastrusture.models import UserCredentials
-from infrastrusture.security.jwt import create_jwt, create_token_pair, verify_refresh
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from punq import Container
+
+from application.api.auth.schemas import LoginSchema, TokenPairSchema, RefreshTokenSchema, UpdateUserCredentialsSchema
+from domain.entities.tokens import TokenEntity
+from infrastructure.auth.jwt import verify_token, create_token_pair
+from infrastructure.repositories.users.base import BaseUserCredentialsRepository
+from service.container import initialize_container
+from service.message_bus import MessageBus
 from settings.config import settings
 
-router = APIRouter()
+router = APIRouter(tags=['Auth'])
 
+security = HTTPBearer()
+
+
+async def get_token_entity(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]
+) -> TokenEntity:
+    return verify_token(credentials.credentials)
 
 
 @router.post('/token/login')
-async def login(schema: LoginSchema) -> TokenPairSchema:
-    user = await UserCredentials.find_one({'email': schema.email})
-
-    if not user:
+async def login(
+        schema: LoginSchema,
+        container: Annotated[Container, Depends(initialize_container)],
+) -> TokenPairSchema:
+    repo = container.resolve(BaseUserCredentialsRepository)
+    user_credentials = repo.get(email=schema.email, password=schema.password)
+    if not user_credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='User not found',
-            headers={'WWW-Authenticate': 'Bearer'}
+            detail='Invalid credentials',
         )
 
-    if not verify_password(schema.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect password',
-            headers={'WWW-Authenticate': 'Bearer'}
-        )
+    access_token, refresh_token = create_token_pair(user_credentials.user_id)
 
-    access, refresh = create_token_pair(user.user_id)
-
-    return TokenPairSchema(access_token=access, refresh_token=refresh)
+    return TokenPairSchema(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.post('/token/refresh')
-async def refresh_token(request: RefreshTokenSchema) -> TokenPairSchema:
-    token = verify_refresh(request.refresh_token)
+# @router.post('/update-credentials')
+# async def update_credentials(
+#         schema: UpdateUserCredentialsSchema,
+#         token: Annotated[TokenEntity, Depends(get_token_entity)],
+#         container: Annotated[Container, Depends(initialize_container)],
+# ) -> ...:
+#     ...
 
-    user_creds = await UserCredentials.find_one({'user_id': token.user_id})
-    if not user_creds:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='User not found',
-            headers={'WWW-Authenticate': 'Bearer'},
-        )
-
-    access, refresh = create_token_pair(token.user_id)
-
-    return TokenPairSchema(access_token=access, refresh_token=refresh)

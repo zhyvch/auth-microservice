@@ -1,6 +1,6 @@
 from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     BASE_PATH: Path = Path(__file__).resolve().parent.parent.parent
@@ -15,18 +15,25 @@ class Settings(BaseSettings):
     RSA_PRIVATE_KEY_PATH: Path = BASE_PATH / 'keys/private.pem'
     RSA_PUBLIC_KEY_PATH: Path = BASE_PATH / 'keys/public.pem'
 
-    MONGODB_HOST: str
-    MONGODB_PORT: int
-    MONGODB_USER: str
-    MONGODB_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: int
+    RABBITMQ_VHOST: str
+    RABBITMQ_PORT: int
 
     @property
-    def MONGODB_URL(self):
-        return f'mongodb://{self.MONGODB_USER}:{self.MONGODB_PASSWORD}@{self.MONGODB_HOST}:{self.MONGODB_PORT}/'
+    def POSTGRES_URL(self):
+        return f'postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}'
 
     model_config = SettingsConfigDict(
         env_file=BASE_PATH / '.env',
         case_sensitive=True
     )
+
 
 settings = Settings()

@@ -1,40 +1,35 @@
 DC = docker compose
 EXEC = docker exec -it
 LOGS = docker logs
-AUTH_SERVICE_FILE = docker_compose/auth-service.yaml
-AUTH_SERVICE_STORAGE_FILE = docker_compose/auth-service-storages.yaml
+APP_FILE = docker_compose/app.yaml
+STORAGES_FILE = docker_compose/storages.yaml
 ENV = --env-file .env
-AUTH_SERVICE_CONTAINER = auth-service
+APP_CONTAINER = auth-service
 
-.PHONY: auth-service-storages
-auth-service-storages:
-	${DC} -f ${AUTH_SERVICE_STORAGE_FILE} ${ENV} up --build -d
+.PHONY: storages
+storages:
+	${DC} -f ${STORAGES_FILE} ${ENV} up --build -d
 
-.PHONY: auth-service-storages-down
-auth-service-storages-down:
-	${DC} -f ${AUTH_SERVICE_STORAGE_FILE} down
+.PHONY: strages-down
+storages-down:
+	${DC} -f ${STORAGES_FILE} down
 
-.PHONY: auth-service-storages-logs
-auth-service-storages-logs:
-	${LOGS} ${AUTH_SERVICE_CONTAINER} -f
+.PHONY: app
+app:
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} ${ENV} up --build -d
 
-.PHONY: auth-service
-auth-service:
-	${DC} -f ${AUTH_SERVICE_FILE} ${ENV} up --build -d
+.PHONY: app-down
+app-down:
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} down
 
-.PHONY: auth-service-down
-auth-service-down:
-	${DC} -f ${AUTH_SERVICE_FILE} down
+.PHONY: app-logs
+app-logs:
+	${LOGS} ${APP_CONTAINER} -f
 
-.PHONY: auth-service-logs
-auth-service-logs:
-	${LOGS} ${AUTH_SERVICE_CONTAINER} -f
+.PHONY: auto-revision
+auto-revision:
+	${EXEC} ${APP_CONTAINER} alembic revision --autogenerate
 
-.PHONY: all
-all:
-	${DC} -f ${AUTH_SERVICE_STORAGE_FILE} -f ${AUTH_SERVICE_FILE} ${ENV} up --build -d
-
-.PHONY: all-down
-all-down:
-	${DC} -f ${AUTH_SERVICE_STORAGE_FILE} -f ${AUTH_SERVICE_FILE} down
-
+.PHONY: revision-upgrade
+revision-upgrade:
+	${EXEC} ${APP_CONTAINER} alembic upgrade head

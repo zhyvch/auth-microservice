@@ -3,11 +3,17 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from uuid import uuid4, UUID
 
+from domain.events.base import BaseEvent
+
 
 @dataclass
 class BaseEntity(ABC):
     id: UUID = field(
-        default_factory=lambda: uuid4,
+        default_factory=uuid4,
+        kw_only=True,
+    )
+    events: list[BaseEvent] = field(
+        default_factory=list,
         kw_only=True,
     )
     created_at: datetime = field(
