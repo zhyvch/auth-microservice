@@ -1,14 +1,17 @@
 from dataclasses import dataclass
+from enum import Enum
+from uuid import UUID
 
-from domain.entities.users import UserCredentialsEntity
 from domain.events.base import BaseEvent
 
 
-@dataclass
-class UserCreatedEvent(BaseEvent):
-    user_credentials: UserCredentialsEntity
+class UserCredentialsStatus(Enum):
+    PENDING = 'pending'
+    SUCCESS = 'success'
+    FAILED = 'failed'
 
 
 @dataclass
 class UserCredentialsCreatedEvent(BaseEvent):
-    user_credentials: UserCredentialsEntity
+    user_id: UUID
+    status: UserCredentialsStatus

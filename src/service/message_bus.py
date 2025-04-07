@@ -18,7 +18,7 @@ Message = Union[BaseEvent, BaseCommand]
 class MessageBus:
     uow: BaseUserCredentialsUnitOfWork
     commands_map: dict[type[BaseCommand], BaseCommandHandler] = field(
-        default_factory=lambda: defaultdict(None),
+        default_factory=dict,
         kw_only=True,
     )
     events_map: dict[type[BaseEvent], list[BaseEventHandler]] = field(
@@ -27,7 +27,7 @@ class MessageBus:
     )
     queue: list[Message] = field(
         default_factory=list,
-        kw_only=True
+        kw_only=True,
     )
 
     async def handle(self, message: Message):
@@ -44,7 +44,7 @@ class MessageBus:
     async def handle_command(self, command: BaseCommand):
         logger.debug('handling command %s', command)
         try:
-            handler = self.commands_map[type(command)]
+            handler = self.commands_map[command.__class__]
             await handler(command)
             self.queue.extend(self.uow.collect_new_event())
         except Exception:

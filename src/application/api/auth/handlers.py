@@ -5,13 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from punq import Container
 
-from application.api.auth.schemas import LoginSchema, TokenPairSchema, RefreshTokenSchema, UpdateUserCredentialsSchema
+from application.api.auth.schemas import LoginSchema, TokenPairSchema
 from domain.entities.tokens import TokenEntity
 from infrastructure.auth.jwt import verify_token, create_token_pair
 from infrastructure.repositories.users.base import BaseUserCredentialsRepository
-from service.container import initialize_container
-from service.message_bus import MessageBus
-from settings.config import settings
+from settings.container import initialize_container
 
 router = APIRouter(tags=['Auth'])
 
@@ -30,7 +28,7 @@ async def login(
         container: Annotated[Container, Depends(initialize_container)],
 ) -> TokenPairSchema:
     repo = container.resolve(BaseUserCredentialsRepository)
-    user_credentials = repo.get(email=schema.email, password=schema.password)
+    user_credentials = await repo.get(email=schema.email, password=schema.password)
     if not user_credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -40,13 +38,3 @@ async def login(
     access_token, refresh_token = create_token_pair(user_credentials.user_id)
 
     return TokenPairSchema(access_token=access_token, refresh_token=refresh_token)
-
-
-# @router.post('/update-credentials')
-# async def update_credentials(
-#         schema: UpdateUserCredentialsSchema,
-#         token: Annotated[TokenEntity, Depends(get_token_entity)],
-#         container: Annotated[Container, Depends(initialize_container)],
-# ) -> ...:
-#     ...
-

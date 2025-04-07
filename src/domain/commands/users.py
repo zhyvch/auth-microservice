@@ -4,6 +4,7 @@ from domain.commands.base import BaseCommand
 from domain.entities.users import UserCredentialsEntity
 
 
+
 @dataclass
 class CreateUserCredentialsCommand(BaseCommand):
     user_credentials: UserCredentialsEntity

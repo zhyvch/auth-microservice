@@ -25,12 +25,12 @@ class BaseUserCredentialsRepository(ABC):
 
         async def _add(self, user_credentials: UserCredentialsEntity) -> None:
             await add(self, user_credentials)
-            self.loaded_users.add(user_credentials)
+            self.loaded_credentials.add(user_credentials)
 
         async def _get(self, email: str, password: str) -> UserCredentialsEntity | None:
             user = await get(self, email, password)
             if user:
-                self.loaded_users.add(user)
+                self.loaded_credentials.add(user)
             return user
 
         cls.add = _add

@@ -1,5 +1,5 @@
 from domain.entities.users import UserCredentialsEntity
-from domain.value_objects.users import EmailVO, str
+from domain.value_objects.users import EmailVO
 from infrastructure.models.users import UserCredentialsModel
 
 

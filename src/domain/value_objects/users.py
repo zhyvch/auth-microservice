@@ -40,7 +40,7 @@ class EmailVO(BaseVO):
 
 
 @dataclass(frozen=True)
-class str(BaseVO):
+class PasswordVO(BaseVO):
     value: str
 
     def validate(self) -> bool:

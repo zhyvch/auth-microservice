@@ -6,10 +6,10 @@ from service.units_of_work.users.base import BaseUserCredentialsUnitOfWork
 
 
 class SQLAlchemyUserCredentialsUnitOfWork(BaseUserCredentialsUnitOfWork):
-    section_factory: async_sessionmaker = session_factory
+    session_factory: async_sessionmaker = session_factory
 
     async def __aenter__(self):
-        self.session = self.section_factory()
+        self.session = self.session_factory()
         self.user_credentials = SQLAlchemyUserCredentialsRepository(self.session)
         return await super().__aenter__()
 

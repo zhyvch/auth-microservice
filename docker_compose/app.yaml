@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: auth-service
     depends_on:
-      postgres:
+      auth-postgres:
         condition: service_healthy
     ports:
       - '${AUTH_SERVICE_API_PORT}:8000'

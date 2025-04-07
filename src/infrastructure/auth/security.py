@@ -9,7 +9,7 @@ from settings.config import settings
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
-def get_hashed_password(password: str) -> str:
+def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 

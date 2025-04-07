@@ -1,9 +1,9 @@
 version: '3.9'
 
 services:
-  postgres:
+  auth-postgres:
     image: postgres:15-alpine
-    container_name: postgres
+    container_name: auth-postgres
     ports:
       - '${POSTGRES_PORT}:5432'
     env_file:

@@ -1,13 +1,10 @@
 from datetime import datetime, timezone, timedelta
-from functools import lru_cache
-from typing import Dict, Any
 from uuid import UUID
 
 import jwt
 from fastapi import HTTPException, status
 
 from domain.entities.tokens import TokenEntity, TokenType
-from domain.entities.users import UserCredentialsEntity
 from infrastructure.auth.security import get_private_key, get_public_key
 from settings.config import settings
 
